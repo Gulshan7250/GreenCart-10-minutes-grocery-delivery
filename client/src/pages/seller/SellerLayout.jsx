@@ -2,10 +2,11 @@ import { NavLink, Outlet } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const SellerLayout = () => {
 
-    const {setIsSeller} = useAppContext();
+    const { axios, navigate} = useAppContext();
 
     const sidebarLinks = [
         { name: "Add Product", path: "/seller", icon: assets.add_icon },
@@ -14,7 +15,17 @@ const SellerLayout = () => {
     ];
 
     const logout = async ()=>{
-        setIsSeller(false)
+        try {
+            const {data} = await axios.get('/api/seller/logout');
+            if(data.success){
+                toast.success(data.message)
+                navigate('/')
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     return (
@@ -29,7 +40,7 @@ const SellerLayout = () => {
                 </div>
             </div>
             <div className="flex">
-                <div className="md:w-64 w-16 border-r h-[550px] text-base border-gray-300 pt-4 flex flex-col transition-all duration-300">
+                <div className="md:w-64 w-16 border-r h-[95vh] text-base border-gray-300 pt-4 flex flex-col ">
                 {sidebarLinks.map((item) => (
                     <NavLink to={item.path} key={item.name} end={item.path == "/seller"}
                         className={({isActive})=>`flex items-center py-3 px-4 gap-3 

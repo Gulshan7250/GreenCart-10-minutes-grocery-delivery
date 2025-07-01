@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/AppContext"
 import { assets, dummyAddress } from "../assets/assets"
+import toast from "react-hot-toast"
 const Cart = () => {
-    const {products, currency, cartItems, removeFromCart, getCartCount, updateCartItem, navigate, getCartAmount} = useAppContext()
+    const {products, currency, cartItems, removeFromCart, getCartCount, updateCartItem, navigate, getCartAmount, axios, user, setCartItems} = useAppContext()
 
     const [cartArray, setCartArray] = useState([])
-    const [adderesses, setAddresses] = useState(dummyAddress)
+    const [addresses, setAddresses] = useState([])
     const [showAddress, setShowAddress] = useState(false)
-    const [selectedAddress, setSelectedAddress] = useState(dummyAddress[0])
+    const [selectedAddress, setSelectedAddress] = useState(null)
     const [paymentOption, setPaymentOption] = useState("COD")
 
     const getCart = () => {
@@ -20,8 +21,60 @@ const Cart = () => {
         setCartArray(tempArray)
     }
 
+    const getUserAddress = async ()=>{
+        try {
+            const {data} = await axios.get('/api/address/get');
+            if(data.success){
+                setAddresses(data.addresses)
+                if(data.addresses.length > 0){
+                    setSelectedAddress(data.addresses[0])
+                }else{
+                    toast.error(data.message)
+                }
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
     const placeOrder = async ()=>{
-        
+        try {
+            if(!selectedAddress){
+                return toast.error("Please select an address")
+            }
+
+            //Place Order with COD
+            if(paymentOption === "COD"){
+                const {data} = await axios.post('/api/order/cod', {
+                    userId: user._id,
+                    items: cartArray.map(item=> ({product: item._id, quantity: item.quantity})),
+                    address: selectedAddress._id
+                })
+
+                if(data.success){
+                    toast.success(data.message)
+                    setCartItems({})
+                    navigate('/my-orders')
+                }else{
+                    toast.error(data.message)
+                }
+            }else{
+                // Place Order with stripe
+                const {data} = await axios.post('/api/order/stripe', {
+                    userId: user._id,
+                    items: cartArray.map(item=> ({product: item._id, quantity: item.quantity})),
+                    address: selectedAddress._id
+                })
+
+                if(data.success){
+                    window.location.replace(data.url)
+                }else{
+                    toast.error(data.message)
+                }
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     useEffect(()=>{
@@ -29,6 +82,12 @@ const Cart = () => {
             getCart()
         }
     }, [products, cartItems])
+
+    useEffect(()=>{
+        if(user){
+            getUserAddress()
+        }
+    }, [user])
 
     return products.length>0 && cartItems ? (
         <div className="flex flex-col md:flex-row mt-16">
@@ -95,7 +154,7 @@ const Cart = () => {
                         </button>
                         {showAddress && (
                             <div className="absolute top-12 py-1 bg-white border border-gray-300 text-sm w-full">
-                               {adderesses.map((address, index)=>(<p onClick={() => {setSelectedAddress(address); setShowAddress(false)}} className="text-gray-500 p-2 hover:bg-gray-100">
+                               {addresses.map((address, index)=>(<p onClick={() => {setSelectedAddress(address); setShowAddress(false)}} className="text-gray-500 p-2 hover:bg-gray-100">
                                     {address.street}, {address.city}, {address.state}, {address.country}
                                 </p>)) }
                                 <p onClick={() => navigate("/add-address")} className="text-primary text-center cursor-pointer p-2 hover:bg-indigo-500/10">
@@ -117,7 +176,7 @@ const Cart = () => {
 
                 <div className="text-gray-500 mt-4 space-y-2">
                     <p className="flex justify-between">
-                        <span>Price</span><span>{currency}{getCartAmount}</span>
+                        <span>Price</span><span>{currency}{getCartAmount()}</span>
                     </p>
                     <p className="flex justify-between">
                         <span>Shipping Fee</span><span className="text-green-600">Free</span>
