@@ -27,7 +27,18 @@ app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
 //Middleware configuration
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin: allowedOrigins, credentials: true}));
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 
 app.get('/', (req, res) => res.send("API is Working"));
