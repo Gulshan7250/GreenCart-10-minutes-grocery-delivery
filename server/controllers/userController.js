@@ -24,8 +24,8 @@ export const register = async (req, res)=>{
 
         res.cookie('token', token, {
           httpOnly: true,
-          secure: false, // keep false for local dev
-          sameSite: 'lax', // change 'strict' to 'lax' for dev
+          secure: true, // keep false for local dev
+          sameSite: 'None', // change 'strict' to 'lax' for dev
           maxAge: 7 * 24 * 60 * 60 * 1000,
        });
 
