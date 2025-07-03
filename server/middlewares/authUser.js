@@ -5,7 +5,7 @@ const authUser = async (req, res, next)=>{
     const {token} = req.cookies;
 
     if(!token){
-        return res.json({success:false, message: 'Not Authorized'});
+        return res.status(401).json({success:false, message: 'Not Authorized, no token'});
     }
 
     try{
@@ -16,6 +16,7 @@ const authUser = async (req, res, next)=>{
                 return res.json({success: false, message: 'User not found'});
             }
             req.user = user;
+            next();
         }else{
             return res.json({success: false, message: 'Not Authorized'});
         }
