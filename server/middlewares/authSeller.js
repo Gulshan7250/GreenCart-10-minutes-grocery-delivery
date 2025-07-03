@@ -14,7 +14,6 @@ const authSeller = async (req, res, next) =>{
         }else{
             return res.json({success: false, message: 'Not Authorized'});
         }
-        next();
     } catch (error){
         res.json({success: false, message: error.message});
     }
