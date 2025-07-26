@@ -5,8 +5,15 @@ import BestSeller from '../components/BestSeller'
 import BottomBanner from '../components/BottomBanner'
 import NewsLetter from '../components/NewsLetter'
 import Footer from '../components/Footer'
+import useOnlineStatus from '../components/useOnlineStatus'
+import Online from '../components/Online'
 
 function Home() {
+
+  const onlineStatus = useOnlineStatus();
+  if(onlineStatus === false)
+    return <Online/>
+
   return (
     <div className='mt-10'>
       <MainBanner/>
