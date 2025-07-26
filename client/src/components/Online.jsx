@@ -18,7 +18,7 @@ const Online = () => {
         Retry
       </button>
 
-      <p className="text-sm mt-4 text-gray-500">Amazon-style fallback page</p>
+      <p className="text-sm mt-4 text-gray-500">We will back as your connection will restore !</p>
     </div>
   )
 }
