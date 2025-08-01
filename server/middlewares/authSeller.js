@@ -10,9 +10,9 @@ const authSeller = async (req, res, next) =>{
     try{
         const tokenDecode = jwt.verify(sellerToken, process.env.JWT_SECRET)
         if(tokenDecode.email === process.env.SELLER_EMAIL){
-           return next();
+           next();
         }else{
-            return res.json({success: false, message: 'Not Authorized'});
+            res.json({success: false, message: 'Not Authorized'});
         }
     } catch (error){
         res.json({success: false, message: error.message});
